@@ -28,85 +28,16 @@ color 07
 @echo off
 if "%1%"=="debug" goto debug
 if exist "Backup-config.txt" goto convertformat
-:update
-cls
-echo Checking for updates. . .
-title Auto Backup - Checking for updates. . .
-mkdir "%cd%\checkversion"
-( echo open ftpp.ostentv.dk
-  echo autobackup
-  echo Thispageisnolongerpublic
-  echo cd install
-  echo binary 
-  echo lcd "%cd%"
-  echo lcd checkversion
-  echo mget version.txt
-  echo bye) > checkversion.txt
-ftp -i -s:checkversion.txt >nul
-del "checkversion.txt" /q >nul
-for /f "Tokens=2 Delims=." %%a in (version.txt) do (
-set currentversion=%%a
-)
-for /f "Tokens=4 Delims=." %%a in (version.txt) do (
-set currentversionrd=%%a
-)
-if not exist "%cd%\checkversion\version.txt" goto updatefailed
-for /f "Tokens=2 Delims=." %%a in (checkversion\version.txt) do (
-set latestversion=%%a
-)
-for /f "Tokens=4 Delims=." %%a in (checkversion\version.txt) do (
-set latestversionrd=%%a
-)
-rmdir "%cd%\checkversion" /s /q >nul
-if %latestversion% GTR %currentversion% goto startupdate
-if %manualupdate%==1 (
-set /a manualupdate=0
-cls
-echo No new updates are available.
-echo.
-pause
-goto menu
-)
 if not exist "settings.bat" goto tutorial
 cls
 choice /t 5 /n /m "Press M now to access the menu, or S to skip." /c ms /d s
 if %ERRORLEVEL%==1 goto menu
 goto step1
 
-:startupdate
-cls
-echo A new update is available.
-echo Current version %currentversion%
-echo Latest version %latestversion%
-echo.
-echo View the changelog at http://ostentv.dk/downloads/autobackupprogram/
-echo.
-echo Do you want to update now?
-echo.
-choice /n /m "(Y/N)" /c yn
-if %ERRORLEVEL%==2 goto menu
-start updater.exe ABP2017
-goto eoc
-
-:updatefailed
-rmdir "%cd%\checkversion" /s /q
-cls
-echo Update check failed /:
-echo Please try again later.
-echo.
-pause
-goto menu
-
 :menu
 set /a easteregg=10
 title Auto Backup - Menu
 cls
-if not %latestversion%==unknown (
-if %latestversion% GTR %currentversion% (
-echo Your software is outdated. Please update now.
-echo.
-)
-)
 echo 1 = Run
 echo 2 = Setup
 echo 3 = Confirm save directory
@@ -130,8 +61,12 @@ goto step1
 if %ERRORLEVEL%==3 goto confirmdir
 if %ERRORLEVEL%==4 goto tutorial
 if %ERRORLEVEL%==5 (
-set /a manualupdate=1
-goto update
+cls
+echo I can't search for updates anymore :(
+echo Check http://ostentv.dk/?view=downloads/abp for news.
+echo.
+pause
+goto menu
 )
 if %ERRORLEVEL%==6 goto info
 if %ERRORLEVEL%==7 goto easteregg
